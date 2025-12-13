@@ -1,0 +1,130 @@
+import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuthStore } from '../store/authStore'
+import { Eye, EyeOff } from 'lucide-react'
+
+const Login = () => {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const navigate = useNavigate()
+  const { login } = useAuthStore()
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+
+    try {
+      // Mock login - replace with actual API call
+      if (email === 'admin@coopvest.com' && password === 'password') {
+        login(
+          { name: 'Admin User', email },
+          'mock-jwt-token',
+          'super_admin',
+          ['read', 'write', 'approve', 'manage_admins']
+        )
+        navigate('/dashboard')
+      } else if (email === 'finance@coopvest.com' && password === 'password') {
+        login(
+          { name: 'Finance Admin', email },
+          'mock-jwt-token',
+          'finance',
+          ['read', 'write', 'approve']
+        )
+        navigate('/dashboard')
+      } else {
+        setError('Invalid email or password')
+      }
+    } catch (err) {
+      setError('Login failed. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50 dark:from-neutral-900 dark:to-neutral-800 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-primary-600 dark:text-primary-400 mb-2">
+            Coopvest
+          </h1>
+          <p className="text-neutral-600 dark:text-neutral-400">Admin Dashboard</p>
+        </div>
+
+        {/* Login Card */}
+        <div className="card">
+          <h2 className="text-2xl font-bold text-neutral-900 dark:text-neutral-50 mb-6">
+            Welcome Back
+          </h2>
+
+          {error && (
+            <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <p className="text-sm text-red-700 dark:text-red-200">{error}</p>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="form-group">
+              <label className="form-label">Email Address</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="admin@coopvest.com"
+                className="input-field"
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Password</label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="input-field pr-10"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-3 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary w-full mt-6"
+            >
+              {loading ? 'Signing in...' : 'Sign In'}
+            </button>
+          </form>
+
+          {/* Demo credentials */}
+          <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <p className="text-xs font-semibold text-blue-700 dark:text-blue-200 mb-2">Demo Credentials:</p>
+            <p className="text-xs text-blue-600 dark:text-blue-300">
+              <strong>Super Admin:</strong> admin@coopvest.com / password
+            </p>
+            <p className="text-xs text-blue-600 dark:text-blue-300">
+              <strong>Finance Admin:</strong> finance@coopvest.com / password
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default Login
