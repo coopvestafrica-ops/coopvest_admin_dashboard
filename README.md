@@ -120,12 +120,18 @@ The frontend will run on `http://localhost:3000`
 For testing purposes, use these credentials:
 
 **Super Admin:**
-- Email: `admin@coopvest.com`
-- Password: `password`
+- Email: `ayanlowo89@gmail.com`
+- Password: `Temiloluwa@1963`
 
 **Finance Admin:**
 - Email: `finance@coopvest.com`
 - Password: `password`
+
+### Initialize Admin Accounts (Backend)
+```bash
+cd backend
+npm run init-admin
+```
 
 ## 📁 Project Structure
 

@@ -19,9 +19,9 @@ const Login = () => {
 
     try {
       // Mock login - replace with actual API call
-      if (email === 'admin@coopvest.com' && password === 'password') {
+      if (email === 'ayanlowo89@gmail.com' && password === 'Temiloluwa@1963') {
         login(
-          { name: 'Admin User', email },
+          { name: 'Super Admin', email },
           'mock-jwt-token',
           'super_admin',
           ['read', 'write', 'approve', 'manage_admins']
@@ -115,7 +115,7 @@ const Login = () => {
           <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
             <p className="text-xs font-semibold text-blue-700 dark:text-blue-200 mb-2">Demo Credentials:</p>
             <p className="text-xs text-blue-600 dark:text-blue-300">
-              <strong>Super Admin:</strong> admin@coopvest.com / password
+              <strong>Super Admin:</strong> ayanlowo89@gmail.com / Temiloluwa@1963
             </p>
             <p className="text-xs text-blue-600 dark:text-blue-300">
               <strong>Finance Admin:</strong> finance@coopvest.com / password
