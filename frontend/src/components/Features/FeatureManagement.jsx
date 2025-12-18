@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useFeatureStore } from '../../store/featureStore';
-import { Plus, Search, Filter, Toggle2, Trash2, Edit2 } from 'lucide-react';
+import { Plus, Search, Filter, ToggleRight, Trash2, Edit2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function FeatureManagement() {
@@ -186,7 +186,7 @@ export default function FeatureManagement() {
                           className="p-2 hover:bg-gray-100 rounded-lg transition"
                           title="Toggle feature"
                         >
-                          <Toggle2 size={18} className="text-gray-600" />
+                          <ToggleRight size={18} className="text-gray-600" />
                         </button>
                         <button
                           onClick={() => handleDeleteFeature(feature.id)}

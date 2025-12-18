@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Plus, Edit, Trash2, Toggle2, Settings, Eye, EyeOff, AlertCircle } from 'lucide-react'
+import { Plus, Edit, Trash2, ToggleRight, Settings, Eye, EyeOff, AlertCircle } from 'lucide-react'
 import MainLayout from '../components/Layout/MainLayout'
 
 const FeatureManagement = () => {
