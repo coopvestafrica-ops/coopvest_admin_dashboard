@@ -67,7 +67,7 @@ const Members = () => {
     const badge = badges[status] || badges.pending
     const Icon = badge.icon
     return (
-      <div className={}>
+      <div className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded text-xs font-medium">
         <Icon size={14} className="mr-1" />
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </div>

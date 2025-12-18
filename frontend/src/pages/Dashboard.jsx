@@ -110,29 +110,29 @@ const Dashboard = () => {
             icon={Users}
             label="Total Members"
             value={stats?.totalMembers?.toLocaleString() || '0'}
-            subtext={}
-            trend={}
+            subtext="Active members"
+            trend="+2.5%"
           />
           <StatCard
             icon={Wallet}
             label="Total Contributions"
-            value={}
-            subtext={}
-            trend={}
+            value={stats?.totalContributions?.toLocaleString() || '0'}
+            subtext="All members"
+            trend="+1.2%"
           />
           <StatCard
             icon={Banknote}
             label="Total Loans"
-            value={}
-            subtext={}
-            trend={}
+            value={stats?.totalLoans?.toLocaleString() || '0'}
+            subtext="Active loans"
+            trend="+3.8%"
           />
           <StatCard
             icon={Activity}
             label="Repayment Rate"
-            value={}
+            value={stats?.repaymentRate || '0%'}
             subtext="On-time repayments"
-            trend={}
+            trend="+0.5%"
           />
         </div>
 
@@ -141,7 +141,7 @@ const Dashboard = () => {
             {alerts.map((alert) => (
               <div
                 key={alert.id}
-                className={}
+                className="p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800"
               >
                 <div className="flex items-start gap-3">
                   <AlertCircle
@@ -232,13 +232,13 @@ const Dashboard = () => {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ name, value }) => }
+                    label={({ name, value }) => `${name}: ${value}`}
                     outerRadius={80}
                     fill="#8884d8"
                     dataKey="value"
                   >
                     {loanStatus.map((entry, index) => (
-                      <Cell key={} fill={entry.fill} />
+                      <Cell key={index} fill={entry.fill} />
                     ))}
                   </Pie>
                   <Tooltip />

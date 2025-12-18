@@ -129,7 +129,7 @@ const Loans = () => {
                       <td className="py-3 px-4 text-neutral-900 dark:text-neutral-50">₦{(loan.amount || 0).toLocaleString()}</td>
                       <td className="py-3 px-4 text-neutral-600 dark:text-neutral-400">{loan.duration} months</td>
                       <td className="py-3 px-4">
-                        <span className={}>
+                        <span className="inline-flex items-center px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded text-xs font-medium">
                           {loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}
                         </span>
                       </td>
