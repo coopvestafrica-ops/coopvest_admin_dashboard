@@ -17,6 +17,8 @@ import Compliance from './pages/Compliance'
 import Settings from './pages/Settings'
 import AccessManagement from './pages/AccessManagement'
 import AuditLogs from './pages/AuditLogs'
+import FeatureManagement from './pages/FeatureManagement'
+import RoleAssignment from './pages/RoleAssignment'
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -133,6 +135,22 @@ function App() {
           element={
             <ProtectedRoute>
               <AuditLogs />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/feature-management"
+          element={
+            <ProtectedRoute>
+              <FeatureManagement />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/role-assignment"
+          element={
+            <ProtectedRoute>
+              <RoleAssignment />
             </ProtectedRoute>
           }
         />

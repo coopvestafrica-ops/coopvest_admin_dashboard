@@ -24,6 +24,8 @@ export default function Sidebar() {
   const superAdminItems = [
     { icon: Shield, label: 'Access Management', path: '/access-management', roles: ['super_admin'] },
     { icon: FileText, label: 'Audit Logs', path: '/audit-logs', roles: ['super_admin'] },
+    { icon: Settings, label: 'Feature Management', path: '/feature-management', roles: ['super_admin'] },
+    { icon: Shield, label: 'Role Assignment', path: '/role-assignment', roles: ['super_admin'] },
   ]
 
   const isActive = (path) => location.pathname === path

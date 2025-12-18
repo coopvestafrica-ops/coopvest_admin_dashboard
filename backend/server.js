@@ -18,6 +18,8 @@ import investmentRoutes from './routes/investments.js'
 import documentRoutes from './routes/documents.js'
 import auditRoutes from './routes/audit.js'
 import statisticsRoutes from './routes/statistics.js'
+import featureRoutes from './routes/features.js'
+import roleRoutes from './routes/roles.js'
 
 // Initialize Express app
 const app = express()
@@ -61,6 +63,8 @@ app.use('/api/investments', investmentRoutes)
 app.use('/api/documents', documentRoutes)
 app.use('/api/audit', auditRoutes)
 app.use('/api/statistics', statisticsRoutes)
+app.use('/api/features', featureRoutes)
+app.use('/api/roles', roleRoutes)
 
 // 404 handler
 app.use((req, res) => {
