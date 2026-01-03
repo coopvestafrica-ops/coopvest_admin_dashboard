@@ -20,6 +20,8 @@ import AccessManagement from './pages/AccessManagement'
 import AuditLogs from './pages/AuditLogs'
 import FeatureManagement from './pages/FeatureManagement'
 import RoleAssignment from './pages/RoleAssignment'
+import InterestRates from './pages/InterestRates'
+import RiskScoring from './pages/RiskScoring'
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -160,6 +162,22 @@ function App() {
           element={
             <ProtectedRoute>
               <RoleAssignment />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/interest-rates"
+          element={
+            <ProtectedRoute>
+              <InterestRates />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/risk-scoring"
+          element={
+            <ProtectedRoute>
+              <RiskScoring />
             </ProtectedRoute>
           }
         />

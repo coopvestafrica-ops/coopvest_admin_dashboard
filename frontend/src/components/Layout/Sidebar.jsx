@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Menu, X, LayoutDashboard, Users, Wallet, Banknote, TrendingUp, FileText, Settings, LogOut, Shield, Bell, RefreshCw } from 'lucide-react'
+import { Menu, X, LayoutDashboard, Users, Wallet, Banknote, TrendingUp, FileText, Settings, LogOut, Shield, Bell, RefreshCw, TrendingDown, Percent } from 'lucide-react'
 import { useUIStore } from '../../store/uiStore'
 import { useAuthStore } from '../../store/authStore'
 
@@ -16,6 +16,8 @@ export default function Sidebar() {
     { icon: Banknote, label: 'Loans', path: '/loans', roles: ['super_admin', 'admin', 'finance', 'investment'] },
     { icon: RefreshCw, label: 'Rollovers', path: '/rollovers', roles: ['super_admin', 'admin', 'finance'] },
     { icon: TrendingUp, label: 'Investments', path: '/investments', roles: ['super_admin', 'admin', 'investment'] },
+    { icon: Percent, label: 'Interest Rates', path: '/interest-rates', roles: ['super_admin', 'admin', 'finance'] },
+    { icon: TrendingDown, label: 'Risk Scoring', path: '/risk-scoring', roles: ['super_admin', 'admin', 'risk'] },
     { icon: FileText, label: 'Documents', path: '/documents', roles: ['super_admin', 'admin'] },
     { icon: Bell, label: 'Notifications', path: '/notifications', roles: ['super_admin', 'admin'] },
     { icon: Shield, label: 'Compliance', path: '/compliance', roles: ['super_admin', 'admin', 'compliance'] },

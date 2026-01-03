@@ -18,28 +18,34 @@ const Login = () => {
     setError('')
 
     try {
-      // Mock login - replace with actual API call
-      if (email === 'ayanlowo89@gmail.com' && password === 'Temiloluwa@1963') {
-        login(
-          { name: 'Super Admin', email },
-          'mock-jwt-token',
-          'super_admin',
-          ['read', 'write', 'approve', 'manage_admins']
-        )
-        navigate('/dashboard')
-      } else if (email === 'finance@coopvest.com' && password === 'password') {
-        login(
-          { name: 'Finance Admin', email },
-          'mock-jwt-token',
-          'finance',
-          ['read', 'write', 'approve']
-        )
-        navigate('/dashboard')
-      } else {
-        setError('Invalid email or password')
+      // Real API call
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.error || 'Login failed')
+        return
       }
+
+      // Use the token and admin data from real API
+      login(
+        {
+          id: data.admin.id,
+          name: data.admin.name,
+          email: data.admin.email
+        },
+        data.token,
+        data.admin.role,
+        data.admin.permissions || []
+      )
+      navigate('/dashboard')
     } catch (err) {
-      setError('Login failed. Please try again.')
+      setError('Network error. Please check your connection.')
     } finally {
       setLoading(false)
     }
@@ -88,7 +94,7 @@ const Login = () => {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
+                  placeholder="Enter your password"
                   className="input-field pr-10"
                   required
                 />
@@ -111,14 +117,14 @@ const Login = () => {
             </button>
           </form>
 
-          {/* Demo credentials */}
+          {/* Demo credentials info */}
           <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
             <p className="text-xs font-semibold text-blue-700 dark:text-blue-200 mb-2">Demo Credentials:</p>
             <p className="text-xs text-blue-600 dark:text-blue-300">
-              <strong>Super Admin:</strong> ayanlowo89@gmail.com / Temiloluwa@1963
+              Contact your administrator for login credentials.
             </p>
-            <p className="text-xs text-blue-600 dark:text-blue-300">
-              <strong>Finance Admin:</strong> finance@coopvest.com / password
+            <p className="text-xs text-blue-500 dark:text-blue-400 mt-2">
+              Default admin: admin@coopvest.com / password123
             </p>
           </div>
         </div>
