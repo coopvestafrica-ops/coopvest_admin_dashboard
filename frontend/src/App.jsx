@@ -10,6 +10,7 @@ import Dashboard from './pages/Dashboard'
 import Members from './pages/Members'
 import Contributions from './pages/Contributions'
 import Loans from './pages/Loans'
+import Rollovers from './pages/Rollovers'
 import Investments from './pages/Investments'
 import Documents from './pages/Documents'
 import Notifications from './pages/Notifications'
@@ -79,6 +80,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Loans />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/rollovers"
+          element={
+            <ProtectedRoute>
+              <Rollovers />
             </ProtectedRoute>
           }
         />
