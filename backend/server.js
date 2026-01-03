@@ -20,6 +20,7 @@ import auditRoutes from './routes/audit.js'
 import statisticsRoutes from './routes/statistics.js'
 import featureRoutes from './routes/features.js'
 import roleRoutes from './routes/roles.js'
+import rolloverRoutes from './routes/rollovers.js'
 
 // Initialize Express app
 const app = express()
@@ -65,6 +66,7 @@ app.use('/api/audit', auditRoutes)
 app.use('/api/statistics', statisticsRoutes)
 app.use('/api/features', featureRoutes)
 app.use('/api/roles', roleRoutes)
+app.use('/api/rollovers', rolloverRoutes)
 
 // 404 handler
 app.use((req, res) => {
