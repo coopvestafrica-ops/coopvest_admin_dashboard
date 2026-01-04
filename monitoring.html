@@ -76,6 +76,16 @@
             50% { opacity: 0.5; }
         }
         
+        @keyframes pulse-red {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.4); }
+            50% { opacity: 1; box-shadow: 0 0 0 10px rgba(244, 67, 54, 0); }
+        }
+        
+        @keyframes pulse-yellow {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(245, 124, 0, 0.4); }
+            50% { opacity: 1; box-shadow: 0 0 0 10px rgba(245, 124, 0, 0); }
+        }
+        
         .container {
             max-width: 1400px;
             margin: 0 auto;
@@ -129,6 +139,7 @@
         .card-icon.yellow { background: #FFF8E1; color: #F9A825; }
         .card-icon.red { background: #FFEBEE; color: #D32F2F; }
         .card-icon.purple { background: #F3E5F5; color: #7B1FA2; }
+        .card-icon.orange { background: #FFF3E0; color: #E65100; }
         
         .alert-panel {
             background: var(--card-bg);
@@ -141,16 +152,23 @@
         .alert-panel.critical {
             border-left-color: var(--error);
             background: #FFEBEE;
+            animation: pulse-red 2s infinite;
         }
         
         .alert-panel.warning {
             border-left-color: var(--warning);
             background: #FFF8E1;
+            animation: pulse-yellow 2s infinite;
         }
         
         .alert-panel.success {
             border-left-color: var(--success);
             background: #E8F5E9;
+        }
+        
+        .alert-panel.info {
+            border-left-color: var(--info);
+            background: #E3F2FD;
         }
         
         .alert-header {
@@ -187,6 +205,11 @@
         
         .alert-badge.info {
             background: var(--info);
+            color: white;
+        }
+        
+        .alert-badge.success {
+            background: var(--success);
             color: white;
         }
         
@@ -299,6 +322,7 @@
         .status-badge.approved { background: #E8F5E9; color: #388E3C; }
         .status-badge.rejected { background: #FFEBEE; color: #D32F2F; }
         .status-badge.active { background: #E3F2FD; color: #1976D2; }
+        .status-badge.awaiting { background: #E3F2FD; color: #1976D2; }
         
         .progress-bar {
             width: 100%;
@@ -356,6 +380,109 @@
             color: var(--text-light);
         }
         
+        /* Alert Configuration Panel */
+        .config-panel {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .config-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .config-row:last-child {
+            border-bottom: none;
+        }
+        
+        .config-label {
+            font-weight: 500;
+        }
+        
+        .config-description {
+            font-size: 0.875rem;
+            color: var(--text-light);
+        }
+        
+        .threshold-input {
+            width: 80px;
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1rem;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.4s;
+            border-radius: 26px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+        
+        .toggle-switch input:checked + .toggle-slider {
+            background-color: var(--primary);
+        }
+        
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(24px);
+        }
+        
+        .notification-settings {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .notification-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .email-input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-top: 0.5rem;
+        }
+        
         @media (max-width: 768px) {
             .container {
                 padding: 1rem;
@@ -404,6 +531,52 @@
             <p id="alert-message">
                 Queue depth is elevated. Current rollover requests awaiting review: 15. Consider allocating more admin resources.
             </p>
+        </div>
+        
+        <!-- Alert Configuration Panel -->
+        <div class="config-panel">
+            <h3 style="margin-bottom: 1rem;">Alert Configuration</h3>
+            <div class="config-row">
+                <div>
+                    <div class="config-label">Queue Depth Alert Threshold</div>
+                    <div class="config-description">Number of pending requests that triggers a warning</div>
+                </div>
+                <input type="number" class="threshold-input" id="warning-threshold" value="20" min="1" max="100">
+            </div>
+            <div class="config-row">
+                <div>
+                    <div class="config-label">Critical Threshold</div>
+                    <div class="config-description">Number of pending requests that triggers critical alert</div>
+                </div>
+                <input type="number" class="threshold-input" id="critical-threshold" value="35" min="1" max="100">
+            </div>
+            <div class="config-row">
+                <div>
+                    <div class="config-label">Email Notifications</div>
+                    <div class="config-description">Receive alerts via email</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="email-notifications" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            <div class="config-row">
+                <div>
+                    <div class="config-label">Admin Email</div>
+                    <div class="config-description">Email address for alert notifications</div>
+                </div>
+                <input type="email" class="email-input" id="admin-email" value="admin@coopvest.com" style="width: 250px;">
+            </div>
+            <div class="config-row">
+                <div>
+                    <div class="config-label">Auto-Refresh</div>
+                    <div class="config-description">Automatically refresh data every 30 seconds</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="auto-refresh" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
         </div>
         
         <!-- Stats Cards -->
@@ -472,7 +645,7 @@
                         <div class="progress-fill" id="queue-progress" style="width: 0%"></div>
                     </div>
                     <p class="last-updated" style="margin-top: 0.5rem;">
-                        Alert threshold: 20 requests. High queue may indicate need for more admin resources.
+                        Alert threshold: <span id="display-threshold">20</span> requests. High queue may indicate need for more admin resources.
                     </p>
                 </div>
             </div>
@@ -535,7 +708,8 @@
     <script>
         // Configuration
         const API_BASE = '/api/v1';
-        const ALERT_THRESHOLD = 20;
+        const ALERT_THRESHOLD_WARNING = 20;
+        const ALERT_THRESHOLD_CRITICAL = 35;
         const REFRESH_INTERVAL = 30000; // 30 seconds
         
         // State
@@ -550,9 +724,56 @@
         
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
+            loadConfig();
             refreshData();
-            setInterval(refreshData, REFRESH_INTERVAL);
+            setupAutoRefresh();
+            setupEventListeners();
         });
+        
+        function setupEventListeners() {
+            document.getElementById('warning-threshold').addEventListener('change', saveConfig);
+            document.getElementById('critical-threshold').addEventListener('change', saveConfig);
+            document.getElementById('email-notifications').addEventListener('change', saveConfig);
+            document.getElementById('admin-email').addEventListener('change', saveConfig);
+            document.getElementById('auto-refresh').addEventListener('change', saveConfig);
+        }
+        
+        function loadConfig() {
+            const saved = localStorage.getItem('monitoringConfig');
+            if (saved) {
+                const config = JSON.parse(saved);
+                document.getElementById('warning-threshold').value = config.warningThreshold || 20;
+                document.getElementById('critical-threshold').value = config.criticalThreshold || 35;
+                document.getElementById('email-notifications').checked = config.emailNotifications !== false;
+                document.getElementById('admin-email').value = config.adminEmail || 'admin@coopvest.com';
+                document.getElementById('auto-refresh').checked = config.autoRefresh !== false;
+            }
+            updateDisplayThreshold();
+        }
+        
+        function saveConfig() {
+            const config = {
+                warningThreshold: parseInt(document.getElementById('warning-threshold').value) || 20,
+                criticalThreshold: parseInt(document.getElementById('critical-threshold').value) || 35,
+                emailNotifications: document.getElementById('email-notifications').checked,
+                adminEmail: document.getElementById('admin-email').value || 'admin@coopvest.com',
+                autoRefresh: document.getElementById('auto-refresh').checked
+            };
+            localStorage.setItem('monitoringConfig', JSON.stringify(config));
+            updateDisplayThreshold();
+            refreshData();
+        }
+        
+        function updateDisplayThreshold() {
+            document.getElementById('display-threshold').textContent = document.getElementById('warning-threshold').value;
+        }
+        
+        function setupAutoRefresh() {
+            const autoRefreshToggle = document.getElementById('auto-refresh');
+            if (autoRefreshToggle.checked) {
+                setInterval(refreshData, REFRESH_INTERVAL);
+            }
+        }
         
         async function refreshData() {
             const btn = document.getElementById('refresh-btn');
@@ -561,19 +782,28 @@
             
             try {
                 // Fetch stats from rollover stats endpoint
-                const statsRes = await fetch('/api/rollovers/stats/summary');
-                if (statsRes.ok) {
-                    stats = await statsRes.json();
+                try {
+                    const statsRes = await fetch('/api/rollovers/stats/summary');
+                    if (statsRes.ok) {
+                        stats = await statsRes.json();
+                    }
+                } catch (e) {
+                    console.log('API not available, using demo data');
                 }
                 
                 // Fetch system status
-                const statusRes = await fetch('/api/health/status');
-                if (statusRes.ok) {
-                    const statusData = await statusRes.json();
-                    updateSystemStatus(statusData);
+                try {
+                    const statusRes = await fetch('/api/health/status');
+                    if (statusRes.ok) {
+                        const statusData = await statusRes.json();
+                        updateSystemStatus(statusData);
+                    }
+                } catch (e) {
+                    console.log('Status API not available');
                 }
                 
                 updateUI();
+                checkAlerts();
             } catch (error) {
                 console.error('Failed to fetch data:', error);
                 // Use mock data for demo
@@ -586,6 +816,7 @@
                     avgProcessingDays: 2.5
                 };
                 updateUI();
+                checkAlerts();
             }
             
             btn.disabled = false;
@@ -605,50 +836,26 @@
             }
         }
         
-        function updateUI() {
-            // Update cards
-            document.getElementById('total-rollovers').textContent = stats.totalRequests || 0;
-            document.getElementById('pending-rollovers').textContent = (stats.pendingCount || 0) + (stats.awaitingApprovalCount || 0);
-            document.getElementById('approved-rollovers').textContent = stats.approvedCount || 0;
-            document.getElementById('rejected-rollovers').textContent = stats.rejectedCount || 0;
-            document.getElementById('avg-processing').textContent = (stats.avgProcessingDays || 0) + 'h';
-            
-            // Update queue health
+        function checkAlerts() {
+            const warningThreshold = parseInt(document.getElementById('warning-threshold').value) || 20;
+            const criticalThreshold = parseInt(document.getElementById('critical-threshold').value) || 35;
             const queueDepth = (stats.pendingCount || 0) + (stats.awaitingApprovalCount || 0);
-            const queuePercent = Math.min(100, (queueDepth / ALERT_THRESHOLD) * 100);
-            document.getElementById('queue-depth-value').textContent = `${queueDepth} / ${ALERT_THRESHOLD}`;
             
-            const progressEl = document.getElementById('queue-progress');
-            progressEl.style.width = `${queuePercent}%`;
-            progressEl.className = 'progress-fill';
-            if (queuePercent > 80) progressEl.classList.add('danger');
-            else if (queuePercent > 50) progressEl.classList.add('warning');
-            
-            // Update activity (mock for demo)
-            document.getElementById('today-activity').textContent = Math.floor((stats.totalRequests || 0) * 0.1);
-            document.getElementById('week-activity').textContent = Math.floor((stats.totalRequests || 0) * 0.4);
-            
-            // Update alert panel
-            updateAlertPanel(queueDepth);
-            
-            // Update chart
-            updateChart();
-            
-            // Update recent activity table
-            updateRecentActivity();
-        }
-        
-        function updateAlertPanel(queueDepth) {
             const panel = document.getElementById('alert-panel');
             const badge = document.getElementById('alert-badge');
             const message = document.getElementById('alert-message');
             
-            if (queueDepth >= ALERT_THRESHOLD) {
+            if (queueDepth >= criticalThreshold) {
                 panel.className = 'alert-panel critical';
                 badge.className = 'alert-badge critical';
                 badge.textContent = 'CRITICAL';
-                message.textContent = `Queue depth has reached critical level (${queueDepth} requests). Immediate action required - allocate more admin resources or increase processing capacity.`;
-            } else if (queueDepth >= ALERT_THRESHOLD * 0.5) {
+                message.textContent = `Queue depth has reached CRITICAL level (${queueDepth} requests). Immediate action required - allocate more admin resources or increase processing capacity.`;
+                
+                // Trigger email notification if enabled
+                if (document.getElementById('email-notifications').checked) {
+                    sendAlertEmail('CRITICAL', queueDepth);
+                }
+            } else if (queueDepth >= warningThreshold) {
                 panel.className = 'alert-panel warning';
                 badge.className = 'alert-badge warning';
                 badge.textContent = 'WARNING';
@@ -659,6 +866,57 @@
                 badge.textContent = 'HEALTHY';
                 message.textContent = `Queue is healthy. Only ${queueDepth} requests pending review. Response times are optimal.`;
             }
+        }
+        
+        async function sendAlertEmail(level, queueDepth) {
+            const adminEmail = document.getElementById('admin-email').value;
+            const subject = `[Coopvest ${level}] Queue Depth Alert`;
+            const body = `The rollover request queue has reached ${level} level.\n\nCurrent queue depth: ${queueDepth}\nThreshold: ${level === 'CRITICAL' ? '35' : '20'}\n\nTime: ${new Date().toISOString()}\n\nPlease take immediate action to address this issue.`;
+            
+            try {
+                await fetch('/api/notifications/alert', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: adminEmail, subject, body, level })
+                });
+                console.log('Alert email queued successfully');
+            } catch (e) {
+                console.log('Could not send alert email:', e);
+            }
+        }
+        
+        function updateUI() {
+            // Update cards
+            document.getElementById('total-rollovers').textContent = stats.totalRequests || 0;
+            document.getElementById('pending-rollovers').textContent = (stats.pendingCount || 0) + (stats.awaitingApprovalCount || 0);
+            document.getElementById('approved-rollovers').textContent = stats.approvedCount || 0;
+            document.getElementById('rejected-rollovers').textContent = stats.rejectedCount || 0;
+            document.getElementById('avg-processing').textContent = (stats.avgProcessingDays || 0) + 'h';
+            
+            // Update queue health
+            const warningThreshold = parseInt(document.getElementById('warning-threshold').value) || 20;
+            const criticalThreshold = parseInt(document.getElementById('critical-threshold').value) || 35;
+            const queueDepth = (stats.pendingCount || 0) + (stats.awaitingApprovalCount || 0);
+            const maxThreshold = Math.max(warningThreshold, criticalThreshold);
+            const queuePercent = Math.min(100, (queueDepth / maxThreshold) * 100);
+            
+            document.getElementById('queue-depth-value').textContent = `${queueDepth} / ${warningThreshold}`;
+            
+            const progressEl = document.getElementById('queue-progress');
+            progressEl.style.width = `${queuePercent}%`;
+            progressEl.className = 'progress-fill';
+            if (queueDepth >= criticalThreshold) progressEl.classList.add('danger');
+            else if (queueDepth >= warningThreshold) progressEl.classList.add('warning');
+            
+            // Update activity (mock for demo)
+            document.getElementById('today-activity').textContent = Math.floor((stats.totalRequests || 0) * 0.1);
+            document.getElementById('week-activity').textContent = Math.floor((stats.totalRequests || 0) * 0.4);
+            
+            // Update chart
+            updateChart();
+            
+            // Update recent activity table
+            updateRecentActivity();
         }
         
         function updateChart() {
@@ -688,7 +946,7 @@
             const mockData = [
                 { name: 'John Doe', phone: '08012345678', original: 100000, newTerm: '6mo @ 7%', guarantors: '3/3', status: 'pending', date: '2 hours ago' },
                 { name: 'Jane Smith', phone: '08012345679', original: 50000, newTerm: '12mo @ 7%', guarantors: '3/3', status: 'approved', date: '5 hours ago' },
-                { name: 'Mike Johnson', phone: '08012345670', original: 75000, newTerm: '6mo @ 7%', guarantors: '2/3', status: 'pending', date: '1 day ago' },
+                { name: 'Mike Johnson', phone: '08012345670', original: 75000, newTerm: '6mo @ 7%', guarantors: '2/3', status: 'awaiting', date: '1 day ago' },
                 { name: 'Sarah Williams', phone: '08012345671', original: 200000, newTerm: '12mo @ 6%', guarantors: '3/3', status: 'approved', date: '1 day ago' },
                 { name: 'Tom Brown', phone: '08012345672', original: 30000, newTerm: '3mo @ 5%', guarantors: '1/3', status: 'rejected', date: '2 days ago' }
             ];
@@ -710,13 +968,17 @@
         
         // Export function for external use
         window.getQueueStatus = () => {
+            const warningThreshold = parseInt(document.getElementById('warning-threshold').value) || 20;
+            const criticalThreshold = parseInt(document.getElementById('critical-threshold').value) || 35;
             const queueDepth = (stats.pendingCount || 0) + (stats.awaitingApprovalCount || 0);
+            
             return {
                 queueDepth,
-                isHealthy: queueDepth < ALERT_THRESHOLD * 0.5,
-                isWarning: queueDepth >= ALERT_THRESHOLD * 0.5 && queueDepth < ALERT_THRESHOLD,
-                isCritical: queueDepth >= ALERT_THRESHOLD,
-                threshold: ALERT_THRESHOLD
+                isHealthy: queueDepth < warningThreshold,
+                isWarning: queueDepth >= warningThreshold && queueDepth < criticalThreshold,
+                isCritical: queueDepth >= criticalThreshold,
+                warningThreshold,
+                criticalThreshold
             };
         };
         
