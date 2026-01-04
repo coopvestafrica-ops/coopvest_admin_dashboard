@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Menu, X, LayoutDashboard, Users, Wallet, Banknote, TrendingUp, FileText, Settings, LogOut, Shield, Bell, RefreshCw, TrendingDown, Percent } from 'lucide-react'
+import { Menu, X, LayoutDashboard, Users, Wallet, Banknote, TrendingUp, FileText, Settings, LogOut, Shield, Bell, RefreshCw, TrendingDown, Percent, Users2 } from 'lucide-react'
 import { useUIStore } from '../../store/uiStore'
 import { useAuthStore } from '../../store/authStore'
 
@@ -12,6 +12,7 @@ export default function Sidebar() {
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard', roles: ['super_admin', 'admin'] },
     { icon: Users, label: 'Members', path: '/members', roles: ['super_admin', 'admin', 'member_support'] },
+    { icon: Users2, label: 'Referrals', path: '/referrals', roles: ['super_admin', 'admin', 'member_support'] },
     { icon: Wallet, label: 'Contributions', path: '/contributions', roles: ['super_admin', 'admin', 'finance'] },
     { icon: Banknote, label: 'Loans', path: '/loans', roles: ['super_admin', 'admin', 'finance', 'investment'] },
     { icon: RefreshCw, label: 'Rollovers', path: '/rollovers', roles: ['super_admin', 'admin', 'finance'] },

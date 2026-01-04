@@ -22,6 +22,7 @@ import FeatureManagement from './pages/FeatureManagement'
 import RoleAssignment from './pages/RoleAssignment'
 import InterestRates from './pages/InterestRates'
 import RiskScoring from './pages/RiskScoring'
+import Referrals from './pages/Referrals'
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -178,6 +179,14 @@ function App() {
           element={
             <ProtectedRoute>
               <RiskScoring />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/referrals"
+          element={
+            <ProtectedRoute>
+              <Referrals />
             </ProtectedRoute>
           }
         />
