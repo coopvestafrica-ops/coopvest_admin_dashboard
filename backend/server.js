@@ -25,6 +25,14 @@ import healthRoutes from './routes/health.js'
 import referralRoutes from './routes/referrals.js'
 import qrCodeRoutes from './routes/qrcodes.js'
 
+// Sheet routes
+import sheetsRoutes from './routes/sheets.js'
+import sheetDataRoutes from './routes/sheetData.js'
+import sheetApprovalsRoutes from './routes/sheetApprovals.js'
+import sheetAssignmentsRoutes from './routes/sheetAssignments.js'
+import sheetAdminRoutes from './routes/sheetAdmin.js'
+import sheetAuditRoutes from './routes/sheetAudit.js'
+
 // Initialize Express app
 const app = express()
 
@@ -72,6 +80,14 @@ app.use('/api/roles', roleRoutes)
 app.use('/api/rollovers', rolloverRoutes)
 app.use('/api/referrals', referralRoutes)
 app.use('/api/qr-codes', qrCodeRoutes)
+
+// Sheet API Routes
+app.use('/api/sheets', sheetsRoutes)
+app.use('/api/sheets', sheetDataRoutes)
+app.use('/api/sheets', sheetApprovalsRoutes)
+app.use('/api/sheet-assignments', sheetAssignmentsRoutes)
+app.use('/api/sheet-admin', sheetAdminRoutes)
+app.use('/api/sheet-audit', sheetAuditRoutes)
 
 // Health check and monitoring routes
 app.use('/api/health', healthRoutes)

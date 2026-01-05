@@ -1,6 +1,8 @@
 import express from 'express'
 import jwt from 'jsonwebtoken'
 import Admin from '../models/Admin.js'
+import SheetAssignment from '../models/SheetAssignment.js'
+import SheetDefinition from '../models/SheetDefinition.js'
 import { authenticate, checkAccountLock } from '../middleware/auth.js'
 import { logAudit, createAuditEntry } from '../middleware/audit.js'
 
@@ -61,17 +63,61 @@ router.post('/login', checkAccountLock, logAudit, createAuditEntry('login_attemp
 })
 
 // Verify token
-router.get('/verify', authenticate, (req, res) => {
-  res.json({
-    valid: true,
-    admin: {
-      id: req.admin._id,
-      name: req.admin.name,
-      email: req.admin.email,
-      role: req.admin.role,
-      permissions: req.admin.permissions
+router.get('/verify', authenticate, async (req, res) => {
+  try {
+    // Get user's sheet assignments
+    let allowedSheets = []
+    
+    if (req.admin.role === 'super_admin') {
+      // Super admins see all active sheets
+      const sheets = await SheetDefinition.find({ status: 'active' })
+      allowedSheets = sheets.map(s => ({
+        sheetId: s.sheetId,
+        name: s.name,
+        category: s.category
+      }))
+    } else {
+      // Get user's assignments
+      const assignments = await SheetAssignment.find({
+        adminId: req.adminId,
+        status: 'active',
+        $or: [
+          { expiresAt: null },
+          { expiresAt: { $gt: new Date() } }
+        ]
+      })
+      
+      const sheetIds = assignments.map(a => a.sheetId)
+      const sheets = await SheetDefinition.find({
+        sheetId: { $in: sheetIds },
+        status: 'active'
+      })
+      
+      allowedSheets = sheets.map(sheet => {
+        const assignment = assignments.find(a => a.sheetId === sheet.sheetId)
+        return {
+          sheetId: sheet.sheetId,
+          name: sheet.name,
+          category: sheet.category,
+          permissions: assignment.permissions
+        }
+      })
     }
-  })
+    
+    res.json({
+      valid: true,
+      admin: {
+        id: req.admin._id,
+        name: req.admin.name,
+        email: req.admin.email,
+        role: req.admin.role,
+        permissions: req.admin.permissions
+      },
+      allowedSheets
+    })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
 })
 
 // Logout (client-side token removal, but we can log it)

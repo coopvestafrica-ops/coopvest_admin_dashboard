@@ -43,6 +43,22 @@ const Login = () => {
         data.admin.role,
         data.admin.permissions || []
       )
+      
+      // Fetch allowed sheets after login
+      try {
+        const verifyResponse = await fetch('/api/auth/verify', {
+          headers: { 
+            'Authorization': `Bearer ${data.token}`
+          }
+        })
+        const verifyData = await verifyResponse.json()
+        if (verifyData.allowedSheets) {
+          localStorage.setItem('allowedSheets', JSON.stringify(verifyData.allowedSheets))
+        }
+      } catch (e) {
+        console.error('Failed to fetch allowed sheets:', e)
+      }
+      
       navigate('/dashboard')
     } catch (err) {
       setError('Network error. Please check your connection.')

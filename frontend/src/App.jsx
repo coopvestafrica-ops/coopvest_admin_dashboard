@@ -23,6 +23,7 @@ import RoleAssignment from './pages/RoleAssignment'
 import InterestRates from './pages/InterestRates'
 import RiskScoring from './pages/RiskScoring'
 import Referrals from './pages/Referrals'
+import DataSheets from './pages/DataSheets'
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -187,6 +188,22 @@ function App() {
           element={
             <ProtectedRoute>
               <Referrals />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/data-sheets"
+          element={
+            <ProtectedRoute>
+              <DataSheets />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/data-sheets/:sheetId"
+          element={
+            <ProtectedRoute>
+              <DataSheets />
             </ProtectedRoute>
           }
         />
