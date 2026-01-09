@@ -202,7 +202,8 @@ sheetRowSchema.statics.findAccessibleRows = async function(sheetId, adminId, adm
     isDeleted: false
   }
   
-  // If not super_admin, apply row-level security
+  // If not super_admin, apply STRICT row-level security
+  // CRITICAL: WHERE (primaryAssignee = adminId OR assignedTo contains adminId)
   if (adminRole !== 'super_admin') {
     query.$or = [
       { primaryAssignee: adminId },

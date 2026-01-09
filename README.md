@@ -14,6 +14,19 @@ A modern, enterprise-grade admin dashboard for Coopvest Africa - a national inte
 - **Notifications**: In-app notifications, email/SMS alerts, and broadcast messaging
 - **Compliance & Governance**: Risk scoring, audit logs, and regulatory monitoring
 
+### Advanced Security & Automation (v2.0)
+- **Row-Level Security**: Strict enforcement of `WHERE assigned_staff_id = current_user_id` at query level
+- **Staff Assignment Automation**: Auto-assign rows based on configurable rules (round-robin, least-loaded, by-role, by-skill)
+- **Approval Workflow Locking**: Approved rows become read-only with status-driven permissions
+- **Support Ticketing System**: Full lifecycle ticket management with SLA tracking and satisfaction ratings
+- **AI Integration Hooks**: 
+  - Loan risk assessment and flagging
+  - Referral abuse detection and fraud prevention
+  - Support response suggestions
+  - Admin summary generation
+  - Member behavior analysis
+- **Comprehensive Audit Logging**: Track all row access attempts, assignments, and status changes
+
 ### Role-Based Access Control
 - **Super Admin**: Full system control, admin management, role assignment
 - **Finance Admin**: Contributions, loans, financial operations

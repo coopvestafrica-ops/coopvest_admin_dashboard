@@ -1,9 +1,11 @@
 import SheetRow from '../models/SheetRow.js'
 import SheetAuditLog from '../models/SheetAuditLog.js'
+import RowAccessLog from '../models/RowAccessLog.js'
 
 /**
  * Middleware to enforce row-level security
  * Ensures users can only see and modify rows assigned to them
+ * CRITICAL: Enforces WHERE assigned_staff_id = current_user_id at query level
  */
 export const enforceRowLevelSecurity = (options = {}) => {
   const {
@@ -21,16 +23,18 @@ export const enforceRowLevelSecurity = (options = {}) => {
       if (allowSuperAdminAll && req.admin.role === 'super_admin') {
         req.rowLevelSecurity = {
           enforced: false,
-          reason: 'super_admin'
+          reason: 'super_admin',
+          isSuperAdmin: true
         }
         return next()
       }
       
       // Get user's scope from assignment
-      const userScope = req.sheetAccess?.scope || 'all'
+      const userScope = req.sheetAccess?.scope || 'assigned_rows'
       const adminId = req.adminId
       
-      // Build row filter based on user scope
+      // Build STRICT row filter based on user scope
+      // CRITICAL: This WHERE clause is mandatory for all queries
       let rowFilter = {
         sheetId,
         isDeleted: false
@@ -38,7 +42,8 @@ export const enforceRowLevelSecurity = (options = {}) => {
       
       switch (userScope) {
         case 'assigned_rows':
-          // User sees rows assigned to them
+          // STRICT: User sees ONLY rows assigned to them
+          // WHERE (primaryAssignee = current_user_id OR assignedTo contains current_user_id)
           rowFilter.$or = [
             { [assigneeField]: adminId },
             { [assigneesArrayField]: adminId }
@@ -46,20 +51,19 @@ export const enforceRowLevelSecurity = (options = {}) => {
           break
           
         case 'own_rows':
-          // User only sees rows they created
+          // STRICT: User only sees rows they created
+          // WHERE createdBy = current_user_id
           rowFilter.createdBy = adminId
           break
           
         case 'all':
         default:
-          // User can see all rows (default behavior)
-          // Add explicit check to ensure some scope is applied
-          if (!req.sheetAccess?.isSuperAdmin) {
-            rowFilter.$or = [
-              { [assigneeField]: adminId },
-              { [assigneesArrayField]: adminId }
-            ]
-          }
+          // Even with 'all' scope, non-super-admins must have assignment
+          // Default to assigned_rows for safety
+          rowFilter.$or = [
+            { [assigneeField]: adminId },
+            { [assigneesArrayField]: adminId }
+          ]
           break
       }
       
@@ -67,7 +71,9 @@ export const enforceRowLevelSecurity = (options = {}) => {
       req.rowLevelSecurity = {
         enforced: true,
         filter: rowFilter,
-        scope: userScope
+        scope: userScope,
+        isSuperAdmin: false,
+        adminId: adminId.toString()
       }
       
       // Modify query options to include the filter
@@ -85,6 +91,7 @@ export const enforceRowLevelSecurity = (options = {}) => {
 
 /**
  * Middleware to check row ownership before update/delete
+ * CRITICAL: Validates that user has explicit permission to modify the row
  */
 export const checkRowOwnership = (action = 'update') => {
   return async (req, res, next) => {
@@ -97,7 +104,7 @@ export const checkRowOwnership = (action = 'update') => {
       }
       
       // Get user scope
-      const userScope = req.sheetAccess?.scope || 'all'
+      const userScope = req.sheetAccess?.scope || 'assigned_rows'
       const adminId = req.adminId
       
       // Find the row
@@ -111,21 +118,23 @@ export const checkRowOwnership = (action = 'update') => {
         return res.status(404).json({ error: 'Row not found' })
       }
       
-      // Check ownership based on scope
+      // CRITICAL: Check ownership based on scope
       let hasAccess = false
       
       switch (userScope) {
         case 'assigned_rows':
         case 'all':
+          // User must be assigned to this row
           hasAccess = 
             row.primaryAssignee?.toString() === adminId.toString() ||
             row.assignedTo.some(a => a.toString() === adminId.toString())
           break
         case 'own_rows':
+          // User must have created this row
           hasAccess = row.createdBy.toString() === adminId.toString()
           break
         default:
-          hasAccess = true
+          hasAccess = false
       }
       
       // Also check assignment permissions
@@ -137,8 +146,22 @@ export const checkRowOwnership = (action = 'update') => {
       
       if (!hasAccess) {
         // Log unauthorized attempt
+        await RowAccessLog.create({
+          sheetId,
+          rowId,
+          adminId,
+          adminName: req.admin.name,
+          adminEmail: req.admin.email,
+          adminRole: req.admin.role,
+          action: action,
+          accessType: 'denied',
+          reason: 'Row not assigned to user',
+          ipAddress: req.ip,
+          userAgent: req.get('user-agent')
+        })
+        
         await SheetAuditLog.log({
-          action: 'read',
+          action: 'unauthorized_access',
           sheetId,
           rowId,
           userId: adminId,
@@ -153,7 +176,8 @@ export const checkRowOwnership = (action = 'update') => {
         
         return res.status(403).json({
           error: 'You do not have permission to modify this row',
-          reason: 'Row not assigned to you'
+          reason: 'Row not assigned to you',
+          action: action
         })
       }
       
@@ -166,11 +190,13 @@ export const checkRowOwnership = (action = 'update') => {
         })
       }
       
-      // Check row status for approval workflow
+      // CRITICAL: Check row status for approval workflow
+      // Approved rows become read-only
       if (row.status === 'approved' && !req.sheetAccess?.assignment?.permissions?.canApprove) {
         return res.status(403).json({
           error: 'Cannot modify approved rows',
-          status: row.status
+          status: row.status,
+          reason: 'Row is locked by approval workflow'
         })
       }
       
@@ -186,6 +212,7 @@ export const checkRowOwnership = (action = 'update') => {
 
 /**
  * Middleware to attach row filter to query
+ * CRITICAL: Ensures row-level security filter is applied to all queries
  */
 export const attachRowFilter = () => {
   return async (req, res, next) => {
@@ -204,8 +231,82 @@ export const attachRowFilter = () => {
   }
 }
 
+/**
+ * Middleware to validate row access before read operations
+ * Logs all row access attempts for audit trail
+ */
+export const validateRowAccess = async (req, res, next) => {
+  try {
+    const { sheetId, rowId } = req.params
+    
+    if (!rowId) return next()
+    
+    const adminId = req.adminId
+    
+    // Find the row
+    const row = await SheetRow.findOne({
+      _id: rowId,
+      sheetId,
+      isDeleted: false
+    })
+    
+    if (!row) {
+      return res.status(404).json({ error: 'Row not found' })
+    }
+    
+    // Check access
+    let hasAccess = false
+    
+    if (req.admin.role === 'super_admin') {
+      hasAccess = true
+    } else {
+      const userScope = req.sheetAccess?.scope || 'assigned_rows'
+      
+      switch (userScope) {
+        case 'assigned_rows':
+        case 'all':
+          hasAccess = 
+            row.primaryAssignee?.toString() === adminId.toString() ||
+            row.assignedTo.some(a => a.toString() === adminId.toString())
+          break
+        case 'own_rows':
+          hasAccess = row.createdBy.toString() === adminId.toString()
+          break
+      }
+    }
+    
+    // Log access attempt
+    await RowAccessLog.create({
+      sheetId,
+      rowId,
+      adminId,
+      adminName: req.admin.name,
+      adminEmail: req.admin.email,
+      adminRole: req.admin.role,
+      action: 'read',
+      accessType: hasAccess ? 'granted' : 'denied',
+      reason: hasAccess ? 'User assigned to row' : 'Row not assigned to user',
+      ipAddress: req.ip,
+      userAgent: req.get('user-agent')
+    })
+    
+    if (!hasAccess) {
+      return res.status(403).json({
+        error: 'You do not have access to this row',
+        reason: 'Row not assigned to you'
+      })
+    }
+    
+    next()
+  } catch (error) {
+    console.error('Validate row access error:', error)
+    next()
+  }
+}
+
 export default {
   enforceRowLevelSecurity,
   checkRowOwnership,
-  attachRowFilter
+  attachRowFilter,
+  validateRowAccess
 }
