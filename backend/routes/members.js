@@ -1,14 +1,30 @@
 import express from 'express'
+import { body, validationResult } from 'express-validator'
 import Member from '../models/Member.js'
 import { authenticate, authorize } from '../middleware/auth.js'
 import { logAudit, createAuditEntry } from '../middleware/audit.js'
 
 const router = express.Router()
 
-// Get all members
+// Validation middleware
+const validateMember = [
+  body('firstName').trim().notEmpty().withMessage('First name is required'),
+  body('lastName').trim().notEmpty().withMessage('Last name is required'),
+  body('email').isEmail().withMessage('Invalid email address'),
+  body('phone').notEmpty().withMessage('Phone number is required'),
+  (req, res, next) => {
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ error: errors.array()[0].msg })
+    }
+    next()
+  }
+]
+
+// Get all members with pagination and filtering
 router.get('/', authenticate, authorize(['read']), async (req, res) => {
   try {
-    const { status, kycStatus, search, page = 1, limit = 20 } = req.query
+    const { status, kycStatus, search, page = 1, limit = 10 } = req.query
     
     let query = {}
     if (status) query.status = status
@@ -22,7 +38,7 @@ router.get('/', authenticate, authorize(['read']), async (req, res) => {
       ]
     }
     
-    const skip = (page - 1) * limit
+    const skip = (parseInt(page) - 1) * parseInt(limit)
     const members = await Member.find(query)
       .skip(skip)
       .limit(parseInt(limit))
@@ -36,9 +52,54 @@ router.get('/', authenticate, authorize(['read']), async (req, res) => {
         total,
         page: parseInt(page),
         limit: parseInt(limit),
-        pages: Math.ceil(total / limit)
+        pages: Math.ceil(total / parseInt(limit))
       }
     })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Create member
+router.post('/', authenticate, authorize(['write']), validateMember, logAudit, createAuditEntry('member_created', 'member'), async (req, res) => {
+  try {
+    const existingMember = await Member.findOne({ 
+      $or: [{ email: req.body.email }, { phone: req.body.phone }] 
+    })
+    
+    if (existingMember) {
+      return res.status(400).json({ error: 'Member with this email or phone already exists' })
+    }
+
+    const member = new Member(req.body)
+    await member.save()
+    
+    req.auditData.resourceId = member._id
+    req.auditData.resourceName = `${member.firstName} ${member.lastName}`
+    
+    res.status(201).json(member)
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Update member
+router.put('/:id', authenticate, authorize(['write']), validateMember, logAudit, createAuditEntry('member_updated', 'member'), async (req, res) => {
+  try {
+    const member = await Member.findByIdAndUpdate(
+      req.params.id,
+      { $set: req.body },
+      { new: true, runValidators: true }
+    )
+    
+    if (!member) {
+      return res.status(404).json({ error: 'Member not found' })
+    }
+    
+    req.auditData.resourceId = member._id
+    req.auditData.resourceName = `${member.firstName} ${member.lastName}`
+    
+    res.json(member)
   } catch (error) {
     res.status(500).json({ error: error.message })
   }
@@ -97,6 +158,24 @@ router.post('/:id/suspend', authenticate, authorize(['write']), logAudit, create
     req.auditData.resourceName = `${member.firstName} ${member.lastName}`
     
     res.json({ message: 'Member suspended successfully' })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Delete member
+router.delete('/:id', authenticate, authorize(['admin']), logAudit, createAuditEntry('member_deleted', 'member'), async (req, res) => {
+  try {
+    const member = await Member.findByIdAndDelete(req.params.id)
+    
+    if (!member) {
+      return res.status(404).json({ error: 'Member not found' })
+    }
+    
+    req.auditData.resourceId = member._id
+    req.auditData.resourceName = `${member.firstName} ${member.lastName}`
+    
+    res.json({ message: 'Member deleted successfully' })
   } catch (error) {
     res.status(500).json({ error: error.message })
   }

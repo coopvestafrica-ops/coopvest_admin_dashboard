@@ -107,21 +107,16 @@ const memberSchema = new mongoose.Schema({
     type: String,
     enum: ['high_risk', 'overdue_payment', 'suspicious_activity', 'compliance_issue']
   }],
-  notes: String,
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
-  }
-}, { timestamps: true })
+  notes: String
+}, { 
+  timestamps: true 
+})
 
 // Index for faster queries
 memberSchema.index({ email: 1 })
 memberSchema.index({ phone: 1 })
 memberSchema.index({ status: 1 })
 memberSchema.index({ kycStatus: 1 })
+memberSchema.index({ firstName: 'text', lastName: 'text', email: 'text', phone: 'text' })
 
 export default mongoose.model('Member', memberSchema)
