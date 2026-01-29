@@ -3,6 +3,7 @@ import { body, validationResult } from 'express-validator'
 import Member from '../models/Member.js'
 import { authenticate, authorize } from '../middleware/auth.js'
 import { logAudit, createAuditEntry } from '../middleware/audit.js'
+import AppError from '../utils/appError.js'
 
 const router = express.Router()
 
@@ -164,12 +165,12 @@ router.post('/:id/suspend', authenticate, authorize(['write']), logAudit, create
 })
 
 // Delete member
-router.delete('/:id', authenticate, authorize(['admin']), logAudit, createAuditEntry('member_deleted', 'member'), async (req, res) => {
+router.delete('/:id', authenticate, authorize(['admin']), logAudit, createAuditEntry('member_deleted', 'member'), async (req, res, next) => {
   try {
     const member = await Member.findByIdAndDelete(req.params.id)
     
     if (!member) {
-      return res.status(404).json({ error: 'Member not found' })
+      return next(new AppError('Member not found', 404))
     }
     
     req.auditData.resourceId = member._id
@@ -177,7 +178,42 @@ router.delete('/:id', authenticate, authorize(['admin']), logAudit, createAuditE
     
     res.json({ message: 'Member deleted successfully' })
   } catch (error) {
-    res.status(500).json({ error: error.message })
+    next(error)
+  }
+})
+
+// Bulk Import Members
+import { DataService } from '../services/dataService.js'
+router.post('/bulk-import', authenticate, authorize(['write']), async (req, res, next) => {
+  try {
+    const { csvData } = req.body
+    if (!csvData) return next(new AppError('CSV data is required', 400))
+
+    const parsedData = await DataService.parseCSV(csvData)
+    
+    const results = {
+      success: 0,
+      failed: 0,
+      errors: []
+    }
+
+    for (const item of parsedData) {
+      try {
+        const member = new Member(item)
+        await member.save()
+        results.success++
+      } catch (err) {
+        results.failed++
+        results.errors.push({ item, error: err.message })
+      }
+    }
+
+    res.json({
+      message: `Import completed: ${results.success} succeeded, ${results.failed} failed`,
+      results
+    })
+  } catch (error) {
+    next(error)
   }
 })
 

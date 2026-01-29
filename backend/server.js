@@ -97,14 +97,13 @@ app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' })
 })
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack)
-  res.status(err.status || 500).json({
-    error: err.message || 'Internal server error',
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
-  })
-})
+// Global Error handling middleware
+import globalErrorHandler from './middleware/errorMiddleware.js'
+app.use(globalErrorHandler)
+
+// Initialize Scheduler
+import { initScheduler } from './services/schedulerService.js'
+initScheduler()
 
 // Start server
 const PORT = process.env.PORT || 5000
