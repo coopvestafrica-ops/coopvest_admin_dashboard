@@ -1,7 +1,18 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as z from 'zod'
 import { Search, Filter, Edit, Trash2, CheckCircle, AlertCircle, Clock, Plus, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import MainLayout from '../components/Layout/MainLayout'
 import { useApi, useMutation } from '../hooks/useApi'
+
+const memberSchema = z.object({
+  firstName: z.string().min(2, 'First name is required'),
+  lastName: z.string().min(2, 'Last name is required'),
+  email: z.string().email('Invalid email address'),
+  phone: z.string().min(10, 'Invalid phone number'),
+  status: z.enum(['active', 'pending', 'suspended', 'inactive']).default('pending')
+})
 
 const Members = () => {
   const [searchTerm, setSearchTerm] = useState('')
@@ -9,12 +20,22 @@ const Members = () => {
   const [page, setPage] = useState(1)
   const [showModal, setShowModal] = useState(false)
   const [editingMember, setEditingMember] = useState(null)
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    status: 'pending'
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    formState: { errors }
+  } = useForm({
+    resolver: zodResolver(memberSchema),
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      status: 'pending'
+    }
   })
 
   // Memoize params to prevent unnecessary refetches
@@ -79,7 +100,7 @@ const Members = () => {
   const handleOpenModal = (member = null) => {
     if (member) {
       setEditingMember(member)
-      setFormData({
+      reset({
         firstName: member.firstName,
         lastName: member.lastName,
         email: member.email,
@@ -88,17 +109,16 @@ const Members = () => {
       })
     } else {
       setEditingMember(null)
-      setFormData({ firstName: '', lastName: '', email: '', phone: '', status: 'pending' })
+      reset({ firstName: '', lastName: '', email: '', phone: '', status: 'pending' })
     }
     setShowModal(true)
   }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
+  const onFormSubmit = async (data) => {
     if (editingMember) {
-      await updateMember(formData, `/members/${editingMember._id}`)
+      await updateMember(data, `/members/${editingMember._id}`)
     } else {
-      await createMember(formData)
+      await createMember(data)
     }
   }
 
@@ -252,58 +272,49 @@ const Members = () => {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">First Name</label>
                   <input
-                    type="text"
-                    value={formData.firstName}
-                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                    required
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-50 focus:ring-2 focus:ring-blue-500 outline-none"
+                    {...register('firstName')}
+                    className={`w-full px-4 py-2 border ${errors.firstName ? 'border-red-500' : 'border-neutral-300 dark:border-neutral-600'} rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-50 focus:ring-2 focus:ring-blue-500 outline-none`}
                   />
+                  {errors.firstName && <p className="text-red-500 text-xs mt-1">{errors.firstName.message}</p>}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Last Name</label>
                   <input
-                    type="text"
-                    value={formData.lastName}
-                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                    required
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-50 focus:ring-2 focus:ring-blue-500 outline-none"
+                    {...register('lastName')}
+                    className={`w-full px-4 py-2 border ${errors.lastName ? 'border-red-500' : 'border-neutral-300 dark:border-neutral-600'} rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-50 focus:ring-2 focus:ring-blue-500 outline-none`}
                   />
+                  {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName.message}</p>}
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Email</label>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Email Address</label>
                 <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  required
-                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-50 focus:ring-2 focus:ring-blue-500 outline-none"
+                  {...register('email')}
+                  className={`w-full px-4 py-2 border ${errors.email ? 'border-red-500' : 'border-neutral-300 dark:border-neutral-600'} rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-50 focus:ring-2 focus:ring-blue-500 outline-none`}
                 />
+                {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Phone</label>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Phone Number</label>
                 <input
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  required
-                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-50 focus:ring-2 focus:ring-blue-500 outline-none"
+                  {...register('phone')}
+                  className={`w-full px-4 py-2 border ${errors.phone ? 'border-red-500' : 'border-neutral-300 dark:border-neutral-600'} rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-50 focus:ring-2 focus:ring-blue-500 outline-none`}
                 />
+                {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>}
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Status</label>
                 <select
-                  value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-50 focus:ring-2 focus:ring-blue-500 outline-none"
+                  {...register('status')}
+                  className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-50 focus:ring-2 focus:ring-blue-500 outline-none"
                 >
                   <option value="pending">Pending</option>
                   <option value="active">Active</option>
@@ -312,7 +323,7 @@ const Members = () => {
                 </select>
               </div>
 
-              <div className="flex gap-3 pt-4">
+              <div className="flex gap-4 mt-8">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
@@ -323,9 +334,9 @@ const Members = () => {
                 <button
                   type="submit"
                   disabled={createLoading || updateLoading}
-                  className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg transition-colors font-medium"
+                  className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg transition-colors"
                 >
-                  {createLoading || updateLoading ? 'Saving...' : 'Save Member'}
+                  {createLoading || updateLoading ? 'Saving...' : editingMember ? 'Update' : 'Add Member'}
                 </button>
               </div>
             </form>

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useSheetStore } from '../../store/sheetStore'
-import { useAuthStore } from '../../store/authStore'
-import DataGrid from './DataGrid'
-import { sheetApi } from '../../api/sheetApi'
+import { useSheetStore } from '../store/sheetStore'
+import { useAuthStore } from '../store/authStore'
+import DataGrid from '../components/DataSheets/DataGrid'
+import { sheetApi } from '../api/sheetApi'
 import toast from 'react-hot-toast'
 import { 
   ArrowLeft, Plus, RefreshCw, ChevronLeft, ChevronRight,
@@ -237,10 +237,27 @@ const DataSheets = () => {
                   <RefreshCw className={clsx('w-5 h-5', loading && 'animate-spin')} />
                 </button>
                 
+                <div className="flex border rounded-lg overflow-hidden bg-white shadow-sm">
+                  <button
+                    onClick={() => toast.success('Exporting CSV...')}
+                    className="p-2 text-gray-600 hover:bg-gray-50 border-r"
+                    title="Export CSV"
+                  >
+                    <Download className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => toast.success('Opening Import Dialog...')}
+                    className="p-2 text-gray-600 hover:bg-gray-50"
+                    title="Import CSV"
+                  >
+                    <Upload className="w-5 h-5" />
+                  </button>
+                </div>
+
                 {permissions.canCreate && (
                   <button
                     onClick={() => setShowCreateModal(true)}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 flex items-center gap-2"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 flex items-center gap-2 shadow-sm"
                   >
                     <Plus className="w-4 h-4" />
                     Add Row

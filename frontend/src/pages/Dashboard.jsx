@@ -136,6 +136,34 @@ const Dashboard = () => {
           />
         </div>
 
+        {/* Advanced Analytics Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="card">
+            <h3 className="text-lg font-bold text-neutral-900 dark:text-neutral-50 mb-4">
+              Cohort Analysis (Retention)
+            </h3>
+            <div className="h-64 flex items-center justify-center border-2 border-dashed border-neutral-200 dark:border-neutral-700 rounded-lg">
+              <div className="text-center">
+                <Users className="mx-auto text-neutral-400 mb-2" size={32} />
+                <p className="text-neutral-500">Member Retention by Sign-up Month</p>
+                <p className="text-xs text-neutral-400 mt-1">Data collection in progress...</p>
+              </div>
+            </div>
+          </div>
+          <div className="card">
+            <h3 className="text-lg font-bold text-neutral-900 dark:text-neutral-50 mb-4">
+              Geospatial Distribution
+            </h3>
+            <div className="h-64 flex items-center justify-center border-2 border-dashed border-neutral-200 dark:border-neutral-700 rounded-lg bg-neutral-50 dark:bg-neutral-900/50">
+              <div className="text-center">
+                <Activity className="mx-auto text-neutral-400 mb-2" size={32} />
+                <p className="text-neutral-500">Member Distribution Map</p>
+                <p className="text-xs text-neutral-400 mt-1">Leaflet Integration Pending API Key</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {alerts.length > 0 && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             {alerts.map((alert) => (

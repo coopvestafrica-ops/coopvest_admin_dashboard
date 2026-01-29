@@ -6,11 +6,43 @@ import { Eye, EyeOff } from 'lucide-react'
 const Login = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [mfaToken, setMfaToken] = useState('')
+  const [mfaRequired, setMfaRequired] = useState(false)
+  const [adminId, setAdminId] = useState(null)
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const navigate = useNavigate()
   const { login } = useAuthStore()
+
+  const handleLoginSuccess = async (data) => {
+    login(
+      {
+        id: data.admin.id,
+        name: data.admin.name,
+        email: data.admin.email
+      },
+      data.token,
+      data.admin.role,
+      data.admin.permissions || []
+    )
+    
+    try {
+      const verifyResponse = await fetch('/api/auth/verify', {
+        headers: { 
+          'Authorization': `Bearer ${data.token}`
+        }
+      })
+      const verifyData = await verifyResponse.json()
+      if (verifyData.allowedSheets) {
+        localStorage.setItem('allowedSheets', JSON.stringify(verifyData.allowedSheets))
+      }
+    } catch (e) {
+      console.error('Failed to fetch allowed sheets:', e)
+    }
+    
+    navigate('/dashboard')
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -18,48 +50,40 @@ const Login = () => {
     setError('')
 
     try {
-      // Real API call
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        setError(data.error || 'Login failed')
-        return
-      }
-
-      // Use the token and admin data from real API
-      login(
-        {
-          id: data.admin.id,
-          name: data.admin.name,
-          email: data.admin.email
-        },
-        data.token,
-        data.admin.role,
-        data.admin.permissions || []
-      )
-      
-      // Fetch allowed sheets after login
-      try {
-        const verifyResponse = await fetch('/api/auth/verify', {
-          headers: { 
-            'Authorization': `Bearer ${data.token}`
-          }
+      if (mfaRequired) {
+        const response = await fetch('/api/auth/verify-mfa', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ adminId, token: mfaToken })
         })
-        const verifyData = await verifyResponse.json()
-        if (verifyData.allowedSheets) {
-          localStorage.setItem('allowedSheets', JSON.stringify(verifyData.allowedSheets))
+        const data = await response.json()
+        if (!response.ok) {
+          setError(data.error || 'Invalid MFA token')
+          return
         }
-      } catch (e) {
-        console.error('Failed to fetch allowed sheets:', e)
+        await handleLoginSuccess(data)
+      } else {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        })
+
+        const data = await response.json()
+
+        if (!response.ok) {
+          setError(data.error || 'Login failed')
+          return
+        }
+
+        if (data.mfaRequired) {
+          setMfaRequired(true)
+          setAdminId(data.adminId)
+          return
+        }
+
+        await handleLoginSuccess(data)
       }
-      
-      navigate('/dashboard')
     } catch (err) {
       setError('Network error. Please check your connection.')
     } finally {
@@ -91,45 +115,73 @@ const Login = () => {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="form-group">
-              <label className="form-label">Email Address</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@coopvest.com"
-                className="input-field"
-                required
-              />
-            </div>
+            {!mfaRequired ? (
+              <>
+                <div className="form-group">
+                  <label className="form-label">Email Address</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="admin@coopvest.com"
+                    className="input-field"
+                    required
+                  />
+                </div>
 
-            <div className="form-group">
-              <label className="form-label">Password</label>
-              <div className="relative">
+                <div className="form-group">
+                  <label className="form-label">Password</label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Enter your password"
+                      className="input-field pr-10"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-3 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+                    >
+                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="form-group">
+                <label className="form-label">Two-Factor Authentication Code</label>
                 <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  className="input-field pr-10"
+                  type="text"
+                  value={mfaToken}
+                  onChange={(e) => setMfaToken(e.target.value)}
+                  placeholder="Enter 6-digit code"
+                  className="input-field text-center tracking-widest text-2xl"
+                  maxLength={6}
                   required
+                  autoFocus
                 />
+                <p className="text-xs text-neutral-500 mt-2">
+                  Enter the code from your authenticator app to continue.
+                </p>
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-3 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+                  onClick={() => setMfaRequired(false)}
+                  className="text-primary-600 text-sm mt-2 hover:underline"
                 >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  Back to login
                 </button>
               </div>
-            </div>
+            )}
 
             <button
               type="submit"
               disabled={loading}
               className="btn-primary w-full mt-6"
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? 'Processing...' : mfaRequired ? 'Verify & Sign In' : 'Sign In'}
             </button>
           </form>
 

@@ -23,33 +23,86 @@ export const DataService = {
   },
 
   /**
-   * Generate a PDF report
+   * Generate a PDF report with better formatting
    * @param {string} title - Report title
    * @param {Array} data - Data to include in the report
    * @param {string} outputPath - Path to save the PDF
    */
   generatePDFReport: (title, data, outputPath) => {
     return new Promise((resolve, reject) => {
-      const doc = new PDFDocument();
-      const stream = fs.createWriteStream(outputPath);
+      try {
+        const doc = new PDFDocument({ margin: 50 });
+        const stream = fs.createWriteStream(outputPath);
 
-      doc.pipe(stream);
+        doc.pipe(stream);
 
-      // Add Title
-      doc.fontSize(20).text(title, { align: 'center' });
-      doc.moveDown();
+        // Header
+        doc.fontSize(25).text('Coopvest Africa', { align: 'center' });
+        doc.fontSize(18).text(title, { align: 'center' });
+        doc.moveDown();
+        doc.fontSize(10).text(`Generated on: ${new Date().toLocaleString()}`, { align: 'right' });
+        doc.moveDown();
+        doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke();
+        doc.moveDown();
 
-      // Add Data
-      doc.fontSize(12);
-      data.forEach((item, index) => {
-        doc.text(`${index + 1}. ${JSON.stringify(item)}`);
-        doc.moveDown(0.5);
-      });
+        // Data Table Simulation
+        doc.fontSize(12);
+        if (data.length === 0) {
+          doc.text('No records found.');
+        } else {
+          data.forEach((item, index) => {
+            // Check for page break
+            if (doc.y > 700) doc.addPage();
+            
+            doc.fillColor('#333').text(`${index + 1}. `, { continued: true });
+            doc.fillColor('#000').text(JSON.stringify(item, null, 2));
+            doc.moveDown(0.5);
+          });
+        }
 
-      doc.end();
+        // Footer
+        const pageCount = doc.bufferedPageRange().count;
+        for (let i = 0; i < pageCount; i++) {
+          doc.switchToPage(i);
+          doc.fontSize(8).text(
+            `Page ${i + 1} of ${pageCount}`,
+            50,
+            750,
+            { align: 'center', width: 500 }
+          );
+        }
 
-      stream.on('finish', () => resolve(outputPath));
-      stream.on('error', (error) => reject(error));
+        doc.end();
+        stream.on('finish', () => resolve(outputPath));
+        stream.on('error', (error) => reject(error));
+      } catch (error) {
+        reject(error);
+      }
     });
+  },
+
+  /**
+   * Validate import data against schema
+   * @param {Array} data - Array of objects to validate
+   * @param {Object} schema - Validation schema (Joi or custom)
+   */
+  validateImportData: (data, schema) => {
+    const results = {
+      valid: [],
+      invalid: [],
+      errors: []
+    };
+
+    data.forEach((item, index) => {
+      const { error, value } = schema.validate(item);
+      if (error) {
+        results.invalid.push(item);
+        results.errors.push({ row: index + 1, message: error.message });
+      } else {
+        results.valid.push(value);
+      }
+    });
+
+    return results;
   }
 };

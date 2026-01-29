@@ -1,17 +1,49 @@
 import React, { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as z from 'zod'
 import { Banknote, TrendingUp, AlertCircle, CheckCircle, X, Plus } from 'lucide-react'
 import MainLayout from '../components/Layout/MainLayout'
 import { useApi, useMutation } from '../hooks/useApi'
 
+const loanSchema = z.object({
+  memberId: z.string().min(1, 'Member is required'),
+  amount: z.number().min(1000, 'Minimum amount is ₦1,000'),
+  duration: z.number().min(1, 'Minimum duration is 1 month').max(36, 'Maximum duration is 36 months'),
+  status: z.enum(['pending', 'active', 'overdue', 'closed']).default('pending')
+})
+
 const Loans = () => {
   const [showModal, setShowModal] = useState(false)
   const [editingLoan, setEditingLoan] = useState(null)
-  const [formData, setFormData] = useState({
-    memberId: '',
-    amount: '',
-    duration: '',
-    status: 'pending'
+  
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors }
+  } = useForm({
+    resolver: zodResolver(loanSchema),
+    defaultValues: {
+      memberId: '',
+      amount: 0,
+      duration: 1,
+      status: 'pending'
+    }
   })
+
+  const { execute: createLoan, loading: createLoading } = useMutation('/loans', {
+    method: 'POST',
+    onSuccess: () => {
+      refetchLoans()
+      setShowModal(false)
+      reset()
+    }
+  })
+
+  const onSubmit = async (data) => {
+    await createLoan(data)
+  }
 
   const { data: loansData, loading: loansLoading, refetch: refetchLoans } = useApi(
     '/loans',
@@ -47,6 +79,70 @@ const Loans = () => {
   return (
     <MainLayout>
       <div className="space-y-6">
+        {showModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+            <div className="bg-white dark:bg-neutral-800 rounded-xl p-6 w-full max-w-md shadow-xl">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold">Create New Loan</h2>
+                <button onClick={() => setShowModal(false)} className="text-neutral-500 hover:text-neutral-700">
+                  <X size={24} />
+                </button>
+              </div>
+              
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                <div className="form-group">
+                  <label className="form-label">Member ID</label>
+                  <input
+                    {...register('memberId')}
+                    className={`input-field ${errors.memberId ? 'border-red-500' : ''}`}
+                    placeholder="Enter Member ID"
+                  />
+                  {errors.memberId && <p className="text-red-500 text-xs mt-1">{errors.memberId.message}</p>}
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Amount (₦)</label>
+                  <input
+                    type="number"
+                    {...register('amount', { valueAsNumber: true })}
+                    className={`input-field ${errors.amount ? 'border-red-500' : ''}`}
+                    placeholder="10000"
+                  />
+                  {errors.amount && <p className="text-red-500 text-xs mt-1">{errors.amount.message}</p>}
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Duration (Months)</label>
+                  <input
+                    type="number"
+                    {...register('duration', { valueAsNumber: true })}
+                    className={`input-field ${errors.duration ? 'border-red-500' : ''}`}
+                    placeholder="12"
+                  />
+                  {errors.duration && <p className="text-red-500 text-xs mt-1">{errors.duration.message}</p>}
+                </div>
+
+                <div className="flex gap-4 mt-6">
+                  <button
+                    type="button"
+                    onClick={() => setShowModal(false)}
+                    className="flex-1 px-4 py-2 border border-neutral-300 rounded-lg hover:bg-neutral-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={createLoading}
+                    className="flex-1 btn-primary"
+                  >
+                    {createLoading ? 'Creating...' : 'Create Loan'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
         <div className="flex items-center justify-between">
           <div>
             <h1 className="section-title">Loan Management</h1>

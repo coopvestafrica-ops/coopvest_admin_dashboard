@@ -11,19 +11,18 @@ const globalErrorHandler = (err, req, res, next) => {
     });
   } else {
     // Production mode: don't leak error details
-    if (err.isOperational) {
-      res.status(err.statusCode).json({
-        status: err.status,
-        message: err.message
-      });
-    } else {
-      // Programming or other unknown error: don't leak details
+    const errorResponse = {
+      status: err.status,
+      message: err.isOperational ? err.message : 'Something went very wrong!',
+      timestamp: new Date().toISOString(),
+      path: req.originalUrl
+    };
+
+    if (!err.isOperational) {
       console.error('ERROR 💥', err);
-      res.status(500).json({
-        status: 'error',
-        message: 'Something went very wrong!'
-      });
     }
+
+    res.status(err.statusCode).json(errorResponse);
   }
 };
 
