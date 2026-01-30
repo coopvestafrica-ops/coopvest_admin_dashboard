@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Menu, X, LayoutDashboard, Users, Wallet, Banknote, TrendingUp, FileText, Settings, LogOut, Shield, Bell, RefreshCw, TrendingDown, Percent, Users2 } from 'lucide-react'
+import { Menu, X, LayoutDashboard, Users, Wallet, Banknote, TrendingUp, FileText, Settings, LogOut, Shield, Bell, RefreshCw, TrendingDown, Percent, Users2, MessageSquare } from 'lucide-react'
 import { useUIStore } from '../../store/uiStore'
 import { useAuthStore } from '../../store/authStore'
 
@@ -21,6 +21,7 @@ export default function Sidebar() {
     { icon: TrendingDown, label: 'Risk Scoring', path: '/risk-scoring', roles: ['super_admin', 'admin', 'risk'] },
     { icon: FileText, label: 'Documents', path: '/documents', roles: ['super_admin', 'admin'] },
     { icon: Bell, label: 'Notifications', path: '/notifications', roles: ['super_admin', 'admin'] },
+    { icon: MessageSquare, label: 'Support', path: '/support', roles: ['super_admin', 'admin', 'member_support'] },
     { icon: Shield, label: 'Compliance', path: '/compliance', roles: ['super_admin', 'admin', 'compliance'] },
     { icon: Settings, label: 'Settings', path: '/settings', roles: ['super_admin', 'admin'] },
   ]

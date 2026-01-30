@@ -24,6 +24,7 @@ import InterestRates from './pages/InterestRates'
 import RiskScoring from './pages/RiskScoring'
 import Referrals from './pages/Referrals'
 import DataSheets from './pages/DataSheets'
+import Support from './pages/Support'
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -204,6 +205,14 @@ function App() {
           element={
             <ProtectedRoute>
               <DataSheets />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/support"
+          element={
+            <ProtectedRoute>
+              <Support />
             </ProtectedRoute>
           }
         />
