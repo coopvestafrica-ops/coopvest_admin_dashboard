@@ -25,6 +25,12 @@ import healthRoutes from './routes/health.js'
 import referralRoutes from './routes/referrals.js'
 import qrCodeRoutes from './routes/qrcodes.js'
 
+// New feature routes
+import walletRoutes from './routes/wallets.js'
+import notificationRoutes from './routes/notifications.js'
+import riskRoutes from './routes/risk.js'
+import mfaRoutes from './routes/mfa.js'
+
 // Sheet routes
 import sheetsRoutes from './routes/sheets.js'
 import sheetDataRoutes from './routes/sheetData.js'
@@ -80,6 +86,10 @@ app.use('/api/roles', roleRoutes)
 app.use('/api/rollovers', rolloverRoutes)
 app.use('/api/referrals', referralRoutes)
 app.use('/api/qr-codes', qrCodeRoutes)
+app.use('/api/wallets', walletRoutes)
+app.use('/api/notifications', notificationRoutes)
+app.use('/api/risk', riskRoutes)
+app.use('/api/mfa', mfaRoutes)
 
 // Sheet API Routes
 app.use('/api/sheets', sheetsRoutes)

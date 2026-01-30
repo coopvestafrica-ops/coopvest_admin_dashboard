@@ -1,0 +1,116 @@
+.executive-dashboard {
+  padding: 24px;
+  background: #f5f5f5;
+  min-height: 100vh;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.dashboard-header h1 {
+  margin: 0;
+  font-size: 28px;
+  color: #003366;
+}
+
+.header-controls {
+  display: flex;
+  gap: 12px;
+}
+
+.alerts-section {
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kpi-section,
+.charts-section,
+.bottom-section,
+.member-overview {
+  margin-bottom: 24px;
+}
+
+.kpi-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.kpi-card .kpi-trend {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #666;
+}
+
+.kpi-card .kpi-trend.positive {
+  color: #52c41a;
+}
+
+.kpi-card .kpi-trend.negative {
+  color: #ff4d4f;
+}
+
+.secondary-kpis .kpi-card.small {
+  text-align: center;
+}
+
+.chart-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.table-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.status-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: #fafafa;
+  border-radius: 8px;
+}
+
+.status-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.status-label {
+  font-size: 13px;
+  color: #666;
+}
+
+.status-value {
+  font-size: 24px;
+  font-weight: 600;
+  color: #003366;
+}
+
+.unread-badge {
+  margin-left: 8px;
+}
+
+@media (max-width: 768px) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .status-item {
+    margin-bottom: 12px;
+  }
+}

@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Menu, X, LayoutDashboard, Users, Wallet, Banknote, TrendingUp, FileText, Settings, LogOut, Shield, Bell, RefreshCw, TrendingDown, Percent, Users2, MessageSquare } from 'lucide-react'
+import { Menu, X, LayoutDashboard, Users, Wallet, Banknote, TrendingUp, FileText, Settings, LogOut, Shield, Bell, RefreshCw, TrendingDown, Percent, Users2, MessageSquare, BarChart3, DollarSign, Activity } from 'lucide-react'
 import { useUIStore } from '../../store/uiStore'
 import { useAuthStore } from '../../store/authStore'
 
@@ -11,6 +11,7 @@ export default function Sidebar() {
 
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard', roles: ['super_admin', 'admin'] },
+    { icon: BarChart3, label: 'Executive View', path: '/executive-dashboard', roles: ['super_admin', 'admin', 'executive'] },
     { icon: Users, label: 'Members', path: '/members', roles: ['super_admin', 'admin', 'member_support'] },
     { icon: Users2, label: 'Referrals', path: '/referrals', roles: ['super_admin', 'admin', 'member_support'] },
     { icon: Wallet, label: 'Contributions', path: '/contributions', roles: ['super_admin', 'admin', 'finance'] },
@@ -19,6 +20,8 @@ export default function Sidebar() {
     { icon: TrendingUp, label: 'Investments', path: '/investments', roles: ['super_admin', 'admin', 'investment'] },
     { icon: Percent, label: 'Interest Rates', path: '/interest-rates', roles: ['super_admin', 'admin', 'finance'] },
     { icon: TrendingDown, label: 'Risk Scoring', path: '/risk-scoring', roles: ['super_admin', 'admin', 'risk'] },
+    { icon: Activity, label: 'Risk Management', path: '/risk-management', roles: ['super_admin', 'admin', 'risk'] },
+    { icon: DollarSign, label: 'Wallet Overview', path: '/wallet-overview', roles: ['super_admin', 'admin', 'finance'] },
     { icon: FileText, label: 'Documents', path: '/documents', roles: ['super_admin', 'admin'] },
     { icon: Bell, label: 'Notifications', path: '/notifications', roles: ['super_admin', 'admin'] },
     { icon: MessageSquare, label: 'Support', path: '/support', roles: ['super_admin', 'admin', 'member_support'] },

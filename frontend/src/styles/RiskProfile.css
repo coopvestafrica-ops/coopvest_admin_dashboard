@@ -1,0 +1,115 @@
+.risk-profile {
+  padding: 24px;
+  background: #f5f5f5;
+  min-height: 100vh;
+}
+
+.risk-profile .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.risk-profile .page-header h1 {
+  margin: 0;
+  font-size: 24px;
+  color: #003366;
+}
+
+.stats-section {
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.stat-card.tier-low {
+  border-left: 4px solid #52c41a;
+}
+
+.stat-card.tier-medium {
+  border-left: 4px solid #faad14;
+}
+
+.stat-card.tier-high {
+  border-left: 4px solid #ff4d4f;
+}
+
+.distribution-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.score-display {
+  display: flex;
+  justify-content: center;
+  padding: 24px;
+}
+
+.score-format {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.score-value {
+  font-size: 48px;
+  font-weight: bold;
+  color: #003366;
+}
+
+.score-tier {
+  margin-top: 8px;
+}
+
+.risk-indicators {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.risk-indicator {
+  border-radius: 8px;
+}
+
+.recommendations {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.recommendation-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #fafafa;
+  border-radius: 8px;
+}
+
+.recommendation-item strong {
+  flex: 1;
+}
+
+.risk-profile .ant-tabs {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+@media (max-width: 768px) {
+  .risk-profile .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .recommendation-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

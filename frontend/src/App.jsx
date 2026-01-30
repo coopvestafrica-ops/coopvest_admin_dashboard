@@ -26,6 +26,12 @@ import Referrals from './pages/Referrals'
 import DataSheets from './pages/DataSheets'
 import Support from './pages/Support'
 
+// New Feature Pages
+import ExecutiveDashboard from './pages/new_features/ExecutiveDashboard'
+import WalletOverview from './pages/new_features/WalletOverview'
+import NotificationCenter from './pages/new_features/NotificationCenter'
+import RiskProfile from './pages/new_features/RiskProfile'
+
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
   const { token } = useAuthStore()
@@ -213,6 +219,40 @@ function App() {
           element={
             <ProtectedRoute>
               <Support />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* New Feature Routes */}
+        <Route
+          path="/executive-dashboard"
+          element={
+            <ProtectedRoute>
+              <ExecutiveDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/wallet-overview"
+          element={
+            <ProtectedRoute>
+              <WalletOverview />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/risk-management"
+          element={
+            <ProtectedRoute>
+              <RiskProfile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/notification-center"
+          element={
+            <ProtectedRoute>
+              <NotificationCenter />
             </ProtectedRoute>
           }
         />
