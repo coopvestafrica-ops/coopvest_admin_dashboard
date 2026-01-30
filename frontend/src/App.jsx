@@ -8,8 +8,10 @@ import { Toaster } from 'react-hot-toast'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Members from './pages/Members'
+import MemberProfile from './pages/MemberProfile'
 import Contributions from './pages/Contributions'
 import Loans from './pages/Loans'
+import LoanReview from './pages/LoanReview'
 import Rollovers from './pages/Rollovers'
 import Investments from './pages/Investments'
 import Documents from './pages/Documents'
@@ -25,6 +27,8 @@ import RiskScoring from './pages/RiskScoring'
 import Referrals from './pages/Referrals'
 import DataSheets from './pages/DataSheets'
 import Support from './pages/Support'
+import SupportChat from './pages/SupportChat'
+import SheetApproval from './pages/SheetApproval'
 
 // New Feature Pages
 import ExecutiveDashboard from './pages/new_features/ExecutiveDashboard'
@@ -253,6 +257,38 @@ function App() {
           element={
             <ProtectedRoute>
               <NotificationCenter />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/members/:id"
+          element={
+            <ProtectedRoute>
+              <MemberProfile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/loan-review"
+          element={
+            <ProtectedRoute>
+              <LoanReview />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/sheet-approval"
+          element={
+            <ProtectedRoute>
+              <SheetApproval />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/support/chat"
+          element={
+            <ProtectedRoute>
+              <SupportChat />
             </ProtectedRoute>
           }
         />

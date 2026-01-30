@@ -16,6 +16,7 @@ export default function Sidebar() {
     { icon: Users2, label: 'Referrals', path: '/referrals', roles: ['super_admin', 'admin', 'member_support'] },
     { icon: Wallet, label: 'Contributions', path: '/contributions', roles: ['super_admin', 'admin', 'finance'] },
     { icon: Banknote, label: 'Loans', path: '/loans', roles: ['super_admin', 'admin', 'finance', 'investment'] },
+    { icon: FileText, label: 'Loan Review', path: '/loan-review', roles: ['super_admin', 'admin', 'finance'] },
     { icon: RefreshCw, label: 'Rollovers', path: '/rollovers', roles: ['super_admin', 'admin', 'finance'] },
     { icon: TrendingUp, label: 'Investments', path: '/investments', roles: ['super_admin', 'admin', 'investment'] },
     { icon: Percent, label: 'Interest Rates', path: '/interest-rates', roles: ['super_admin', 'admin', 'finance'] },
@@ -24,7 +25,9 @@ export default function Sidebar() {
     { icon: DollarSign, label: 'Wallet Overview', path: '/wallet-overview', roles: ['super_admin', 'admin', 'finance'] },
     { icon: FileText, label: 'Documents', path: '/documents', roles: ['super_admin', 'admin'] },
     { icon: Bell, label: 'Notifications', path: '/notifications', roles: ['super_admin', 'admin'] },
+    { icon: Bell, label: 'Notification Center', path: '/notification-center', roles: ['super_admin', 'admin'] },
     { icon: MessageSquare, label: 'Support', path: '/support', roles: ['super_admin', 'admin', 'member_support'] },
+    { icon: MessageSquare, label: 'Support Chat', path: '/support/chat', roles: ['super_admin', 'admin', 'member_support'] },
     { icon: Shield, label: 'Compliance', path: '/compliance', roles: ['super_admin', 'admin', 'compliance'] },
     { icon: Settings, label: 'Settings', path: '/settings', roles: ['super_admin', 'admin'] },
   ]
@@ -34,6 +37,7 @@ export default function Sidebar() {
     { icon: FileText, label: 'Audit Logs', path: '/audit-logs', roles: ['super_admin'] },
     { icon: Settings, label: 'Feature Management', path: '/feature-management', roles: ['super_admin'] },
     { icon: Shield, label: 'Role Assignment', path: '/role-assignment', roles: ['super_admin'] },
+    { icon: FileText, label: 'Sheet Approval', path: '/sheet-approval', roles: ['super_admin', 'admin'] },
   ]
 
   const isActive = (path) => location.pathname === path

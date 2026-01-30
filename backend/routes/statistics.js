@@ -208,4 +208,301 @@ router.get('/loans/status', authenticate, authorize(['read']), async (req, res) 
   }
 })
 
+// Get default rate statistics
+router.get('/loans/default-rate', authenticate, authorize(['read']), async (req, res) => {
+  try {
+    const loanStats = await Loan.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalLoans: { $sum: 1 },
+          defaultedCount: {
+            $sum: { $cond: [{ $eq: ['$status', 'defaulted'] }, 1, 0] }
+          },
+          totalPrincipal: { $sum: '$principalAmount' },
+          defaultedAmount: {
+            $sum: {
+              $cond: [{ $eq: ['$status', 'defaulted'] }, '$principalAmount', 0]
+            }
+          }
+        }
+      }
+    ])
+
+    const stats = loanStats[0] || {}
+    const defaultRate = stats.totalLoans > 0
+      ? ((stats.defaultedCount / stats.totalLoans) * 100).toFixed(2)
+      : 0
+
+    const defaultedAmountRate = stats.totalPrincipal > 0
+      ? ((stats.defaultedAmount / stats.totalPrincipal) * 100).toFixed(2)
+      : 0
+
+    res.json({
+      totalLoans: stats.totalLoans || 0,
+      defaultedCount: stats.defaultedCount || 0,
+      defaultRate: parseFloat(defaultRate),
+      defaultedAmount: stats.defaultedAmount || 0,
+      defaultedAmountRate: parseFloat(defaultedAmountRate)
+    })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Get risk exposure statistics
+router.get('/risk-exposure', authenticate, authorize(['read']), async (req, res) => {
+  try {
+    const riskDistribution = await Loan.aggregate([
+      {
+        $lookup: {
+          from: 'members',
+          localField: 'memberId',
+          foreignField: '_id',
+          as: 'member'
+        }
+      },
+      { $unwind: '$member' },
+      {
+        $group: {
+          _id: '$member.riskTier',
+          count: { $sum: 1 },
+          totalPrincipal: { $sum: '$principalAmount' },
+          outstandingBalance: { $sum: '$outstandingBalance' }
+        }
+      }
+    ])
+
+    const totalByRisk = await Loan.aggregate([
+      {
+        $lookup: {
+          from: 'members',
+          localField: 'memberId',
+          foreignField: '_id',
+          as: 'member'
+        }
+      },
+      { $unwind: '$member' },
+      {
+        $group: {
+          _id: null,
+          totalPrincipal: { $sum: '$principalAmount' },
+          totalOutstanding: { $sum: '$outstandingBalance' }
+        }
+      }
+    ])
+
+    const totals = totalByRisk[0] || { totalPrincipal: 0, totalOutstanding: 0 }
+
+    const formatted = riskDistribution.map(item => ({
+      riskTier: item._id || 'unknown',
+      loanCount: item.count,
+      principalAmount: item.totalPrincipal,
+      outstandingBalance: item.outstandingBalance,
+      percentage: totals.totalPrincipal > 0
+        ? ((item.totalPrincipal / totals.totalPrincipal) * 100).toFixed(2)
+        : 0
+    }))
+
+    res.json({
+      distribution: formatted,
+      totals: {
+        totalPrincipal: totals.totalPrincipal,
+        totalOutstanding: totals.totalOutstanding
+      }
+    })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Get investment statistics
+router.get('/investments', authenticate, authorize(['read']), async (req, res) => {
+  try {
+    const investmentStats = await Investment.aggregate([
+      {
+        $group: {
+          _id: '$status',
+          count: { $sum: 1 },
+          totalAmount: { $sum: '$totalAmount' },
+          amountRaised: { $sum: '$amountRaised' },
+          totalReturns: { $sum: '$totalReturns' }
+        }
+      }
+    ])
+
+    const summary = await Investment.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalInvestments: { $sum: '$totalAmount' },
+          totalRaised: { $sum: '$amountRaised' },
+          totalReturns: { $sum: '$totalReturns' },
+          activeCount: {
+            $sum: { $cond: [{ $eq: ['$status', 'active'] }, 1, 0] }
+          },
+          completedCount: {
+            $sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] }
+          }
+        }
+      }
+    ])
+
+    res.json({
+      byStatus: investmentStats,
+      summary: summary[0] || {}
+    })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Get rollover statistics
+router.get('/rollovers', authenticate, authorize(['read']), async (req, res) => {
+  {
+    try {
+      const Rollover = (await import('../models/Rollover.js')).default
+      
+      const rolloverStats = await Rollover.aggregate([
+        {
+          $group: {
+            _id: '$status',
+            count: { $sum: 1 },
+            totalAmount: { $sum: '$principalAmount' }
+          }
+        }
+      ])
+
+      const summary = await Rollover.aggregate([
+        {
+          $group: {
+            _id: null,
+            totalRollovers: { $sum: 1 },
+            totalAmount: { $sum: '$principalAmount' },
+            pendingCount: {
+              $sum: { $cond: [{ $eq: ['$status', 'pending'] }, 1, 0] }
+            },
+            approvedCount: {
+              $sum: { $cond: [{ $eq: ['$status', 'approved'] }, 1, 0] }
+            }
+          }
+        }
+      ])
+
+      res.json({
+        byStatus: rolloverStats,
+        summary: summary[0] || {}
+      })
+    } catch (error) {
+      res.status(500).json({ error: error.message })
+    }
+  }
+})
+
+// Get loan performance by tier
+router.get('/loans/by-tier', authenticate, authorize(['read']), async (req, res) => {
+  try {
+    const tierPerformance = await Loan.aggregate([
+      {
+        $lookup: {
+          from: 'members',
+          localField: 'memberId',
+          foreignField: '_id',
+          as: 'member'
+        }
+      },
+      { $unwind: '$member' },
+      {
+        $group: {
+          _id: '$member.riskTier',
+          loanCount: { $sum: 1 },
+          totalPrincipal: { $sum: '$principalAmount' },
+          totalDisbursed: {
+            $sum: {
+              $cond: [{ $in: ['$status', ['disbursed', 'repaying', 'completed']] }, '$principalAmount', 0]
+            }
+          },
+          totalRepaid: { $sum: '$totalRepaid' },
+          defaultCount: {
+            $sum: { $cond: [{ $eq: ['$status', 'defaulted'] }, 1, 0] }
+          }
+        }
+      }
+    ])
+
+    const formatted = tierPerformance.map(tier => ({
+      tier: tier._id || 'unknown',
+      loanCount: tier.loanCount,
+      totalPrincipal: tier.totalPrincipal,
+      totalDisbursed: tier.totalDisbursed,
+      totalRepaid: tier.totalRepaid,
+      defaultCount: tier.defaultCount,
+      defaultRate: tier.loanCount > 0
+        ? ((tier.defaultCount / tier.loanCount) * 100).toFixed(2)
+        : 0,
+      repaymentRate: tier.totalDisbursed > 0
+        ? ((tier.totalRepaid / tier.totalDisbursed) * 100).toFixed(2)
+        : 0
+    }))
+
+    res.json(formatted)
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Get daily/weekly activity stats
+router.get('/activity', authenticate, authorize(['read']), async (req, res) => {
+  try {
+    const days = parseInt(req.query.days) || 30
+    const startDate = new Date()
+    startDate.setDate(startDate.getDate() - days)
+
+    const dailyActivity = await Loan.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: startDate }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: '%Y-%m-%d', date: '$createdAt' }
+          },
+          newLoans: { $sum: 1 },
+          disbursedAmount: { $sum: '$principalAmount' }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ])
+
+    const contributionActivity = await Contribution.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: startDate },
+          status: 'completed'
+        }
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: '%Y-%m-%d', date: '$createdAt' }
+          },
+          count: { $sum: 1 },
+          totalAmount: { $sum: '$amount' }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ])
+
+    res.json({
+      period: { start: startDate, end: new Date(), days },
+      loans: dailyActivity,
+      contributions: contributionActivity
+    })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
 export default router
